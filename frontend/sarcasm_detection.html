@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarcasm Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Sarcasm Detection</h2>
+        <form method="POST">
+            <textarea name="text" rows="4" cols="50" placeholder="Enter the text for sarcasm detection..."></textarea>
+            <br><br>
+            <button type="submit">Detect Sarcasm</button>
+        </form>
+        {% if sarcasm %}
+            <h3>{{ sarcasm }}</h3>
+        {% endif %}
+        <a href="/">Go Back Home</a>
+    </div>
+</body>
+</html>

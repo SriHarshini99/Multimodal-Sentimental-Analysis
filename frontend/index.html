@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Text Analysis App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .upload-section {
+            margin-top: 30px;
+        }
+        .upload-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .upload-btn:hover {
+            background-color: #45a049;
+        }
+        video {
+            margin-top: 20px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .results-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #4CAF50;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header Section -->
+<header class="header">
+    <h1>Complete Text Analysis App</h1>
+    <p>Analyze videos to extract text and determine sentiment and sarcasm effortlessly!</p>
+</header>
+
+<!-- Main Content Section -->
+<div class="content">
+
+    <!-- Upload Video Section -->
+    <div class="upload-section">
+        <h2>Upload Your Video</h2>
+        <form id="video-form" enctype="multipart/form-data">
+            <label for="video-file" class="upload-btn">Choose a Video</label>
+            <input type="file" id="video-file" name="video" accept="video/*" style="display:none;" required>
+            <button type="submit" class="upload-btn">Upload & Analyze</button>
+        </form>
+    </div>
+
+    <!-- Video Preview Section -->
+    <div id="video-preview" style="display:none;">
+        <h3>Video Preview:</h3>
+        <video id="video-player" controls>
+            <source id="video-source" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" class="results-section" style="display:none;">
+        <h3>Analysis Results:</h3>
+        <p><strong>Extracted Text:</strong> <span id="extracted-text"></span></p>
+        <p><strong>Sentiment:</strong> <span id="sentiment-result"></span></p>
+        <p><strong>Sarcasm:</strong> <span id="sarcasm-result"></span></p>
+    </div>
+
+    <!-- Upload Audio Section -->
+    <div class="upload-section">
+        <h2>Upload Your Audio</h2>
+        <form id="audio-form" enctype="multipart/form-data">
+            <label for="audio-file" class="upload-btn">Choose an Audio File</label>
+            <input type="file" id="audio-file" name="audio" accept="audio/*" style="display:none;" required>
+            <button type="submit" class="upload-btn">Upload & Analyze</button>
+        </form>
+    </div>
+
+    <!-- Audio Preview Section -->
+    <div id="audio-preview" style="display:none;">
+        <h3>Audio Preview:</h3>
+        <audio id="audio-player" controls>
+            <source id="audio-source" type="audio/mpeg">
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" class="results-section" style="display:none;">
+        <h3>Analysis Results:</h3>
+        <p><strong>Extracted Text:</strong> <span id="extracted-text"></span></p>
+        <p><strong>Sentiment:</strong> <span id="sentiment-result"></span></p>
+        <p><strong>Sarcasm:</strong> <span id="sarcasm-result"></span></p>
+    </div>
+
+        <!-- Text Input Section -->
+    <div class="text-section">
+        <h2>Enter Your Text</h2>
+        <form id="text-form">
+            <textarea id="text-input" placeholder="Enter your text here..." required></textarea>
+            <button type="submit" class="analyze-btn">Analyze Text</button>
+        </form>
+    </div>
+
+    <!-- Results Section for Text -->
+    <div id="text-results-section" class="results-section" style="display:none;">
+        <h3>Text Analysis Results:</h3>
+        <p><strong>Sentiment:</strong> <span id="text-sentiment-result"></span></p>
+        <p><strong>Sarcasm:</strong> <span id="text-sarcasm-result"></span></p>
+    </div>
+
+
+
+</div>
+
+<!-- Footer Section -->
+<footer class="footer">
+    <p>&copy; 2024 Complete Text Analysis App. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // Video upload and preview functionality
+    document.getElementById("video-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById("video-file");
+        const videoPreview = document.getElementById("video-preview");
+        const videoPlayer = document.getElementById("video-player");
+        const videoSource = document.getElementById("video-source");
+        const formData = new FormData(this);
+
+        if (!fileInput.files[0]) {
+            alert("Please select a video file.");
+            return;
+        }
+
+        // Set video preview
+        const objectURL = URL.createObjectURL(fileInput.files[0]);
+        videoSource.src = objectURL;
+        videoPlayer.load();
+        videoPreview.style.display = "block";
+
+        // Submit video to backend
+        fetch("/upload", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Display results
+            document.getElementById("extracted-text").textContent = data.extracted_text;
+            document.getElementById("sentiment-result").textContent = data.sentiment;
+            document.getElementById("sarcasm-result").textContent = data.sarcasm;
+            document.getElementById("results-section").style.display = "block";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while processing the video.");
+        });
+    });
+
+    // Handle video file selection
+    document.querySelector("label[for='video-file']").addEventListener("click", () => {
+        document.getElementById("video-file").click();
+    });
+</script>
+
+<script>
+    // Audio upload and preview functionality
+    document.getElementById("audio-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById("audio-file");
+        const formData = new FormData(this);
+
+        if (!fileInput.files[0]) {
+            alert("Please select an audio file.");
+            return;
+        }
+
+        // Submit audio to backend
+        fetch("/audio_predict", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Display results
+            document.getElementById("extracted-text").textContent = data.extracted_text;
+            document.getElementById("sentiment-result").textContent = data.sentiment;
+            document.getElementById("sarcasm-result").textContent = data.sarcasm;
+            document.getElementById("results-section").style.display = "block";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while processing the audio.");
+        });
+    });
+
+    // Handle audio file selection
+    document.querySelector("label[for='audio-file']").addEventListener("click", () => {
+        document.getElementById("audio-file").click();
+    });
+</script>
+
+<script>
+    // Handle text input form submission
+    document.getElementById("text-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const textInput = document.getElementById("text-input").value;
+
+        if (!textInput.trim()) {
+            alert("Please enter some text.");
+            return;
+        }
+
+        // Submit the text to the backend
+        fetch("/predict_text", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: textInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Display results
+            document.getElementById("text-sentiment-result").textContent = data.sentiment;
+            document.getElementById("text-sarcasm-result").textContent = data.sarcasm;
+            document.getElementById("text-results-section").style.display = "block";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while processing the text.");
+        });
+    });
+</script>
+
+
+
+</body>
+</html>
