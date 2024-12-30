@@ -1,0 +1,10 @@
+steps to run
+1. open miniconda prompt 
+
+2. type "conda activate ns" and hit enter
+
+3. type " cd  C:\Users\siliv\OneDrive\Desktop\multi_modal_sentiment_main\frontend " and hit enter
+
+4. type "python app.py" and hit enter
+
+5.open chrome and hit this localhost server "http://127.0.0.1:5000/"
